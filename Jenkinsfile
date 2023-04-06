@@ -1,29 +1,29 @@
 pipeline {
     agent any
 
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "MAVEN_HOME"
+    }
+
     stages {
         stage('Build') {
             steps {
-                echo 'Build App'
+                // Get some code from a GitHub repository
+                git 'https://github.com/ram-chadar/samstrack-api.git'
+
+                
+                // To run Maven on a Windows agent, use
+                 bat "mvn -Dmaven.test.failure.ignore=true clean package"
             }
-        }
-        
-        stage('Test') {
-            steps {
-                echo 'Test App'
+
+            post {
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
+                success {
+                    archiveArtifacts 'target/*.jar'
+                }
             }
-        }
-        
-        stage('Deploy') {
-            steps {
-                echo 'Deploy App'
-            }
-        }
-    }
-    
-    post { 
-        always { 
-            emailext attachLog: true, body: 'testing...', subject: 'Pipeline Post Mail', to: 'salikramchadar@gmail.com'
         }
     }
 }
